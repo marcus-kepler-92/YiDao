@@ -1,0 +1,47 @@
+# Dev environment override
+# Usage: docker compose -f docker-compose.yml -f docker-compose-dev.yml watch
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+      --log-level debug
+    environment:
+      DEBUG: "true"
+      ENVIRONMENT: "dev"
+      LOG_LEVEL: "DEBUG"
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /app/app
+        - action: rebuild
+          path: ./pyproject.toml
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    command: celery -A app.tasks worker --loglevel=debug
+    environment:
+      LOG_LEVEL: "DEBUG"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./app
+          target: /app/app
+
+  db:
+    ports:
+      - "${DB_PORT:-5432}:5432"
+
+  redis:
+    ports:
+      - "6379:6379"

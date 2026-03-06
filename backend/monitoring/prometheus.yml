@@ -1,0 +1,18 @@
+# Prometheus 配置文件
+
+global:
+  scrape_interval: 15s      # 抓取间隔
+  evaluation_interval: 15s  # 规则评估间隔
+
+scrape_configs:
+  # Prometheus 自身监控
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # FastAPI 应用监控
+  - job_name: 'fastapi'
+    static_configs:
+      - targets: ['web:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
